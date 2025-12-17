@@ -2,87 +2,181 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AutoCare Plus | Live Board</title>
+<title>AutoCare Plus | Insights</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{ background:#020617; color:white; font-family:Segoe UI }
-h2{text-align:center}
-.board{ display:flex; gap:14px; padding:20px }
-.col{
-  background:#0f172a; width:20%;
-  padding:14px; border-radius:16px
+body{
+  margin:0;
+  font-family:Segoe UI,sans-serif;
+  background:#020617;
+  color:white;
+  overflow:hidden;
 }
-.job{
-  background:#1e293b;
-  padding:12px; margin:10px 0;
-  border-radius:10px;
+
+/* ===== RACING BACKGROUND (same as staff) ===== */
+.race-bg{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background:radial-gradient(circle at top,#020617,#000);
 }
-button{
-  width:100%; margin-top:6px;
-  background:#38bdf8; border:none;
-  padding:6px; border-radius:8px;
-  cursor:pointer;
+.road{
+  position:absolute;
+  bottom:0;
+  width:300%;
+  height:45%;
+  background:repeating-linear-gradient(
+    90deg,#111 0,#111 60px,#eee 60px,#eee 120px);
+  opacity:.35;
 }
-small{ color:#94a3b8 }
+.car{
+  position:absolute;
+  bottom:18%;
+  font-size:64px;
+  filter:drop-shadow(0 10px 30px rgba(0,0,0,.9));
+}
+.car1{ bottom:20% }
+.car2{ bottom:26%; font-size:56px }
+.car3{ bottom:14%; font-size:60px }
+.headlight{
+  position:absolute;
+  bottom:22%;
+  width:160px;
+  height:40px;
+  background:radial-gradient(circle,#fff,#fde68a,transparent);
+  filter:blur(14px);
+  opacity:.6;
+}
+.sparks{
+  position:absolute;
+  bottom:16%;
+  left:50%;
+  width:6px;height:6px;
+  background:#facc15;
+  box-shadow:0 0 10px #facc15,10px 6px 12px #fb7185;
+  border-radius:50%;
+  animation:spark .15s infinite alternate;
+}
+@keyframes spark{to{transform:translateY(-6px);opacity:.3}}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,.75);
+  z-index:-1;
+}
+
+/* ===== DASHBOARD ===== */
+h2{text-align:center;margin:15px}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  padding:30px;
+}
+.card{
+  background:#0f172a;
+  padding:24px;
+  border-radius:18px;
+}
 </style>
 </head>
 
 <body>
 
-<h2>🔧 AutoCare Live Job Board</h2>
-<div class="board" id="board"></div>
+<!-- Racing Background -->
+<div class="race-bg">
+  <div class="road"></div>
+  <div class="car car1">🏎️</div>
+  <div class="car car2">🚗</div>
+  <div class="car car3">🚙</div>
+  <div class="headlight"></div>
+  <div class="sparks"></div>
+</div>
+
+<h2>📊 Service Insights</h2>
+<div class="grid">
+  <div class="card" id="workload"></div>
+  <div class="card" id="completed"></div>
+  <div class="card" id="avgtime"></div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import {
-  getFirestore, collection, onSnapshot,
-  updateDoc, doc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot }
+from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-const firebaseConfig = {
+/* Firebase */
+const app = initializeApp({
   apiKey: "AIzaSyD9cPmUCMEtT7XukcAxmeS50jKh1A2f31Q",
   authDomain: "auto-care-plus-e7fdf.firebaseapp.com",
   projectId: "auto-care-plus-e7fdf",
   storageBucket: "auto-care-plus-e7fdf.firebasestorage.app",
   messagingSenderId: "746107164946",
   appId: "1:746107164946:web:5951433bf11f0cadedfbcb"
-};
-
-const app = initializeApp(firebaseConfig);
+});
 const db = getFirestore(app);
 
-const stages=["NEW","INSPECTION","REPAIR","QUALITY_CHECK","READY"];
-board.innerHTML = stages.map(s=>`
-<div class="col"><h3>${s}</h3><div id="${s}"></div></div>`).join("");
-
-onSnapshot(collection(db,"jobs"), snap=>{
-  stages.forEach(s=>document.getElementById(s).innerHTML="");
+/* Insights */
+onSnapshot(collection(db,"jobs"),snap=>{
+  let stage={},done=0,total=0;
 
   snap.forEach(d=>{
     const j=d.data();
-    const div=document.createElement("div");
-    div.className="job";
-    div.innerHTML=`
-      <b>${j.vehicleNumber}</b><br>
-      ${j.customerName}<br>
-      <small>🕒 ${j.createdAt?.toDate().toLocaleString()}</small>
-      ${j.status!=="READY"?
-        `<button onclick="nextStage('${d.id}','${j.status}')">Next</button>`:""}
-    `;
-    document.getElementById(j.status).appendChild(div);
+    stage[j.status]=(stage[j.status]||0)+1;
+    if(j.completedAt && j.createdAt){
+      done++;
+      total+=j.completedAt.seconds-j.createdAt.seconds;
+    }
   });
+
+  workload.innerHTML=`<h3>Workload</h3>`+
+    Object.entries(stage).map(([k,v])=>`${k}: ${v}`).join("<br>")+
+    `<p>${new Date().toLocaleString()}</p>`;
+
+  completed.innerHTML=`<h3>Completed Jobs</h3><h1>${done}</h1>`;
+
+  avgtime.innerHTML=`<h3>Avg Turnaround</h3>
+    <h1>${done?Math.round(total/done/60):0} mins</h1>`;
 });
 
-window.nextStage = async(id,status)=>{
-  const i=stages.indexOf(status);
-  if(i<stages.length-1){
-    await updateDoc(doc(db,"jobs",id),{
-      status:stages[i+1],
-      completedAt:stages[i+1]==="READY"?serverTimestamp():null
-    });
-  }
-};
+/* ===== REAL-TIME SPEED ENGINE ===== */
+let speed=12;
+const cars=document.querySelectorAll(".car");
+const road=document.querySelector(".road");
+
+const style=document.createElement("style");
+style.innerHTML=`
+@keyframes drive{
+  0%{transform:translateX(-20vw) scaleX(1)}
+  45%{transform:translateX(120vw) scaleX(1)}
+  50%{transform:translateX(120vw) scaleX(-1)}
+  95%{transform:translateX(-20vw) scaleX(-1)}
+  100%{transform:translateX(-20vw) scaleX(1)}
+}
+@keyframes roadMove{to{transform:translateX(-50%)}}
+`;
+document.head.appendChild(style);
+
+function applySpeed(){
+  cars.forEach((c,i)=>{
+    c.style.animation=`drive ${speed+i*2}s linear infinite`;
+  });
+  road.style.animation=`roadMove ${speed/4}s linear infinite`;
+}
+applySpeed();
+
+onSnapshot(collection(db,"jobs"),snap=>{
+  let load=0;
+  snap.forEach(d=>{
+    if(["REPAIR","QUALITY_CHECK"].includes(d.data().status)) load++;
+  });
+  speed=Math.max(6,16-load);
+  applySpeed();
+});
 </script>
+
 </body>
 </html>
