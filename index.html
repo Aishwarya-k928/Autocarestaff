@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AutoCare Plus | Live Board</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{ background:#020617; color:white; font-family:Segoe UI }
+h2{text-align:center}
+.board{ display:flex; gap:14px; padding:20px }
+.col{
+  background:#0f172a; width:20%;
+  padding:14px; border-radius:16px
+}
+.job{
+  background:#1e293b;
+  padding:12px; margin:10px 0;
+  border-radius:10px;
+}
+button{
+  width:100%; margin-top:6px;
+  background:#38bdf8; border:none;
+  padding:6px; border-radius:8px;
+  cursor:pointer;
+}
+small{ color:#94a3b8 }
+</style>
+</head>
+
+<body>
+
+<h2>🔧 AutoCare Live Job Board</h2>
+<div class="board" id="board"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import {
+  getFirestore, collection, onSnapshot,
+  updateDoc, doc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD9cPmUCMEtT7XukcAxmeS50jKh1A2f31Q",
+  authDomain: "auto-care-plus-e7fdf.firebaseapp.com",
+  projectId: "auto-care-plus-e7fdf",
+  storageBucket: "auto-care-plus-e7fdf.firebasestorage.app",
+  messagingSenderId: "746107164946",
+  appId: "1:746107164946:web:5951433bf11f0cadedfbcb"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const stages=["NEW","INSPECTION","REPAIR","QUALITY_CHECK","READY"];
+board.innerHTML = stages.map(s=>`
+<div class="col"><h3>${s}</h3><div id="${s}"></div></div>`).join("");
+
+onSnapshot(collection(db,"jobs"), snap=>{
+  stages.forEach(s=>document.getElementById(s).innerHTML="");
+
+  snap.forEach(d=>{
+    const j=d.data();
+    const div=document.createElement("div");
+    div.className="job";
+    div.innerHTML=`
+      <b>${j.vehicleNumber}</b><br>
+      ${j.customerName}<br>
+      <small>🕒 ${j.createdAt?.toDate().toLocaleString()}</small>
+      ${j.status!=="READY"?
+        `<button onclick="nextStage('${d.id}','${j.status}')">Next</button>`:""}
+    `;
+    document.getElementById(j.status).appendChild(div);
+  });
+});
+
+window.nextStage = async(id,status)=>{
+  const i=stages.indexOf(status);
+  if(i<stages.length-1){
+    await updateDoc(doc(db,"jobs",id),{
+      status:stages[i+1],
+      completedAt:stages[i+1]==="READY"?serverTimestamp():null
+    });
+  }
+};
+</script>
+</body>
+</html>
