@@ -10,16 +10,26 @@
         :root {
             --accent-cyan: #00d2ff;
             --accent-green: #22c55e;
-            --glass: rgba(15, 23, 42, 0.7);
-            --border: rgba(255, 255, 255, 0.1);
-            --bg: #020617;
+            --glass-dark: rgba(15, 23, 42, 0.75); /* More opaque for dark theme */
+            --glass-light: rgba(255, 255, 255, 0.85); /* More opaque for light theme */
+            --border-dark: rgba(0, 210, 255, 0.2); /* Neon border for dark */
+            --border-light: rgba(0, 0, 0, 0.15); /* Subtle border for light */
+            --bg-dark: #020617;
+            --bg-light: #f8fafc;
+            --text-dark: #e2e8f0; /* Lighter text for dark theme */
+            --text-light: #0f172a; /* Darker text for light theme */
+            --muted-dark: #94a3b8;
+            --muted-light: #64748b;
         }
 
         body.light {
-            --bg: #f8fafc;
-            --glass: rgba(255, 255, 255, 0.8);
-            --border: rgba(0, 0, 0, 0.1);
-            --accent-cyan: #0088cc;
+            --bg-dark: var(--bg-light); /* Override bg to light */
+            --glass-dark: var(--glass-light); /* Override glass to light */
+            --border-dark: var(--border-light); /* Override border to light */
+            --text-dark: var(--text-light); /* Override text to light */
+            --muted-dark: var(--muted-light); /* Override muted to light */
+            --accent-cyan: #0088cc; /* Slightly darker cyan for light theme */
+            --accent-green: #16a34a; /* Slightly darker green for light theme */
         }
 
         * { box-sizing: border-box; transition: all 0.3s ease; }
@@ -27,104 +37,193 @@
         body {
             margin: 0; min-height: 100vh;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg);
-            color: white;
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
         }
-
-        body.light { color: #020617; }
 
         /* ANIMATED BACKGROUND (Consistent with Main Page) */
         .hero-bg {
             position: fixed; inset: 0;
-            background: linear-gradient(to bottom, rgba(2, 6, 23, 0.5), rgba(2, 6, 23, 0.9)),
+            background: linear-gradient(to bottom, rgba(2, 6, 23, 0.4), rgba(2, 6, 23, 0.9)),
                         url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2000&auto=format&fit=crop') center/cover no-repeat;
+            background-size: cover;
             z-index: -3;
+            animation: bgMove 20s infinite alternate ease-in-out;
+        }
+
+        @keyframes bgMove {
+            from { transform: scale(1); }
+            to { transform: scale(1.15) rotate(1deg); }
+        }
+
+        /* 2. ANIMATED CIRCUITS (The flowing data lines) */
+        .circuits {
+            position: fixed; inset: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 80px 80px;
+            mask-image: radial-gradient(circle, black, transparent 90%);
+            opacity: 0.3;
+            z-index: -2;
+            animation: circuitFlow 10s linear infinite;
+        }
+
+        @keyframes circuitFlow {
+            from { background-position: 0 0; }
+            to { background-position: 80px 80px; }
+        }
+
+        /* 3. SCANNING LINE EFFECT */
+        .scan-line {
+            position: fixed; inset: 0;
+            background: linear-gradient(to bottom, transparent, rgba(0, 210, 255, 0.1), transparent);
+            height: 100px; width: 100%;
+            z-index: -1;
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan {
+            from { transform: translateY(-100vh); }
+            to { transform: translateY(100vh); }
         }
 
         /* HEADER */
         .header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 20px 40px;
-            background: var(--glass);
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid var(--border);
-            position: sticky; top: 0; z-index: 100;
+            background: var(--glass-dark);
+            backdrop-filter: blur(25px); /* Increased blur */
+            border: 1px solid var(--border-dark); /* Neon border */
+            border-radius: 20px; /* Rounded corners */
+            margin: 20px 40px 0; /* Margin from edges */
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.3); /* Neon glow */
+            position: relative; z-index: 100; /* Ensure it's above other elements */
         }
 
-        .brand { font-size: 22px; font-weight: 700; letter-spacing: -1px; color: var(--accent-cyan); }
-        .toggle { cursor: pointer; font-size: 20px; }
+        .brand {
+            font-size: 26px; /* Larger font */
+            font-weight: 700; letter-spacing: -1px;
+            color: var(--text-dark); /* Changed to primary text color */
+            border-left: 4px solid var(--accent-cyan);
+            padding-left: 20px;
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); /* Text glow */
+        }
+        .brand span { color: var(--accent-cyan); } /* To make "Staff" stand out if desired */
+
+        .toggle {
+            cursor: pointer; font-size: 24px; /* Larger toggle */
+            padding: 8px 12px;
+            border-radius: 50%; /* Circle toggle */
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-dark);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+        }
+
+        /* BOARD Label */
+        .board-label {
+            margin: 20px 40px 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--muted-dark);
+            font-weight: 600;
+            z-index: 10;
+        }
+
 
         /* KANBAN BOARD */
         .board {
+            flex-grow: 1; /* Allow board to take available space */
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 20px;
-            padding: 30px;
-            align-items: start;
+            padding: 0 40px 40px; /* Adjust padding */
+            align-items: stretch; /* Stretch columns to fill height */
+            z-index: 10;
         }
 
         .col {
-            background: var(--glass);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-            border-radius: 20px;
+            background: var(--glass-dark);
+            backdrop-filter: blur(20px); /* Increased blur */
+            border: 1px solid var(--border-dark); /* Neon border */
+            border-radius: 15px; /* Softer rounded corners */
             padding: 20px;
-            min-height: 80vh;
+            min-height: 500px; /* Minimum height for columns */
             display: flex; flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.2); /* Neon glow */
         }
 
         .col h3 {
             margin: 0 0 20px;
-            font-size: 12px;
+            font-size: 14px; /* Slightly larger */
             text-transform: uppercase;
             letter-spacing: 2px;
             color: var(--accent-cyan);
-            border-left: 3px solid var(--accent-cyan);
-            padding-left: 10px;
+            border-bottom: 2px solid var(--accent-cyan); /* Underline style */
+            padding-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.4); /* Text glow */
         }
 
         /* JOB CARDS */
         .job {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03); /* Lighter background for cards */
+            border: 1px solid rgba(255, 255, 255, 0.08); /* Softer border */
+            border-radius: 10px;
             padding: 15px;
             margin-bottom: 15px;
             animation: fadeIn 0.4s ease forwards;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
         }
 
         .job:hover {
             border-color: var(--accent-cyan);
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-3px);
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.15);
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
         }
 
-        .job b { display: block; font-size: 16px; margin-bottom: 4px; letter-spacing: 1px; }
-        .job small { color: #94a3b8; font-size: 12px; }
+        .job b { display: block; font-size: 16px; margin-bottom: 4px; letter-spacing: 0.5px; font-weight: 600; }
+        .job small { color: var(--muted-dark); font-size: 12px; }
 
         /* NEON BUTTON */
         .next-btn {
             width: 100%;
-            margin-top: 12px;
-            padding: 10px;
+            margin-top: 15px; /* More space */
+            padding: 12px; /* Taller button */
             border: 1px solid var(--accent-green);
             background: transparent;
             color: var(--accent-green);
             border-radius: 8px;
             font-weight: 700;
             text-transform: uppercase;
-            font-size: 11px;
+            font-size: 12px;
             cursor: pointer;
             letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(34, 197, 94, 0.5); /* Green text glow */
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.3); /* Green button glow */
         }
 
         .next-btn:hover {
             background: var(--accent-green);
-            color: white;
-            box-shadow: 0 0 15px var(--accent-green);
+            color: var(--bg-dark); /* Dark text on green */
+            box-shadow: 0 0 20px var(--accent-green);
+            text-shadow: none; /* Remove text glow on hover */
+            transform: scale(1.02);
+        }
+
+        .completed-status {
+            color: var(--accent-green); 
+            font-size: 11px; 
+            margin-top: 12px; 
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-align: center;
+            text-shadow: 0 0 5px rgba(34, 197, 94, 0.4);
         }
 
         @keyframes fadeIn {
@@ -133,9 +232,16 @@
         }
 
         /* RESPONSIVE */
-        @media (max-width: 1000px) {
-            .board { grid-template-columns: 1fr; }
+        @media (max-width: 1200px) {
+            .board { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .header, .board-label { margin: 15px 20px 0; padding: 15px 25px; }
+            .board { grid-template-columns: 1fr; padding: 0 20px 20px; }
             .col { min-height: auto; }
+            .brand { font-size: 20px; }
+            .toggle { font-size: 20px; }
         }
     </style>
 </head>
@@ -143,11 +249,15 @@
 <body>
 
 <div class="hero-bg"></div>
+<div class="circuits"></div>
+<div class="scan-line"></div>
 
 <div class="header">
-    <div class="brand">🔧 AUTOCARE STAFF // COMMAND</div>
+    <div class="brand">🔧 AUTOCARE <span>STAFF</span> // COMMAND</div>
     <div class="toggle" id="toggle">🌙</div>
 </div>
+
+<div class="board-label">BOARD</div>
 
 <div class="board" id="board"></div>
 
@@ -156,12 +266,17 @@
     import { getFirestore, collection, onSnapshot, updateDoc, doc, serverTimestamp } 
     from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
+    // Firebase configuration - MAKE SURE TO REPLACE WITH YOUR ACTUAL CONFIG
     const firebaseConfig = {
-        apiKey: "AIzaSyD9cPmUCMEtT7XukcAxmeS50jKh1A2f31Q",
-        authDomain: "auto-care-plus-e7fdf.firebaseapp.com",
-        projectId: "auto-care-plus-e7fdf",
+        apiKey: "YOUR_API_KEY", // Replace with your Firebase API Key
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com", // Replace with your Project ID
+        projectId: "YOUR_PROJECT_ID", // Replace with your Project ID
+        storageBucket: "YOUR_PROJECT_ID.appspot.com", // Replace with your Project ID
+        messagingSenderId: "YOUR_SENDER_ID", // Replace with your Sender ID
+        appId: "YOUR_APP_ID" // Replace with your App ID
     };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
@@ -176,9 +291,12 @@
         </div>
     `).join("");
 
-    // Real-time Sync
+    // Real-time Sync with Firestore
     onSnapshot(collection(db, "jobs"), snap => {
+        // Clear all columns first
         stages.forEach(s => document.getElementById(s).innerHTML = "");
+        
+        // Populate columns with current jobs
         snap.forEach(d => {
             const j = d.data();
             const div = document.createElement("div");
@@ -188,19 +306,21 @@
                 <small>${j.customerName}</small>
                 ${j.status !== "READY" ? 
                     `<button class="next-btn" onclick="next('${d.id}','${j.status}')">Advance Phase →</button>` : 
-                    `<div style="color:var(--accent-green); font-size:10px; margin-top:10px; font-weight:bold;">● COMPLETED</div>`}
+                    `<div class="completed-status">● PHASE COMPLETE</div>`}
             `;
             const column = document.getElementById(j.status);
             if(column) column.appendChild(div);
         });
     });
 
+    // Function to move job to next stage
     window.next = async (id, status) => {
         const i = stages.indexOf(status);
         if (i < stages.length - 1) {
             const jobRef = doc(db, "jobs", id);
             await updateDoc(jobRef, {
                 status: stages[i + 1],
+                // Set completedAt timestamp only when moving to "READY"
                 completedAt: stages[i + 1] === "READY" ? serverTimestamp() : null
             });
         }
@@ -208,10 +328,20 @@
 
     /* THEME TOGGLE */
     const toggle = document.getElementById("toggle");
+    const savedTheme = localStorage.getItem("theme");
+
+    // Apply saved theme on load
+    if (savedTheme === "light") {
+        document.body.classList.add("light");
+        toggle.textContent = "☀️";
+    }
+
+    // Toggle theme on click
     toggle.onclick = () => {
         document.body.classList.toggle("light");
         const isLight = document.body.classList.contains("light");
         toggle.textContent = isLight ? "☀️" : "🌙";
+        localStorage.setItem("theme", isLight ? "light" : "dark");
     };
 </script>
 </body>
