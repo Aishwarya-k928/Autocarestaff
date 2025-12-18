@@ -2,110 +2,109 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AutoCare Plus | Insights</title>
+<title>AutoCare Plus | Staff</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+/* ===== THEME VARIABLES ===== */
+:root{
+  --bg:#0b1020;
+  --card:#0f172a;
+  --border:rgba(255,255,255,.06);
+  --text:#fff;
+  --muted:#9ca3af;
+  --accent:#22c55e;
+}
+body.light{
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --text:#020617;
+  --muted:#64748b;
+  --accent:#16a34a;
+}
+
+html,body{height:100%}
 body{
   margin:0;
-  font-family:Segoe UI,sans-serif;
-  background:#020617;
-  color:white;
-  overflow:hidden;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Inter","Segoe UI",sans-serif;
+  transition:.3s;
 }
 
-/* ===== RACING BACKGROUND (same as staff) ===== */
-.race-bg{
-  position:fixed;
-  inset:0;
-  z-index:-2;
-  background:radial-gradient(circle at top,#020617,#000);
+/* ===== HEADER ===== */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:16px 22px;
 }
-.road{
-  position:absolute;
-  bottom:0;
-  width:300%;
-  height:45%;
-  background:repeating-linear-gradient(
-    90deg,#111 0,#111 60px,#eee 60px,#eee 120px);
-  opacity:.35;
+.brand{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  font-weight:600;
 }
-.car{
-  position:absolute;
-  bottom:18%;
-  font-size:64px;
-  filter:drop-shadow(0 10px 30px rgba(0,0,0,.9));
-}
-.car1{ bottom:20% }
-.car2{ bottom:26%; font-size:56px }
-.car3{ bottom:14%; font-size:60px }
-.headlight{
-  position:absolute;
-  bottom:22%;
-  width:160px;
-  height:40px;
-  background:radial-gradient(circle,#fff,#fde68a,transparent);
-  filter:blur(14px);
-  opacity:.6;
-}
-.sparks{
-  position:absolute;
-  bottom:16%;
-  left:50%;
-  width:6px;height:6px;
-  background:#facc15;
-  box-shadow:0 0 10px #facc15,10px 6px 12px #fb7185;
-  border-radius:50%;
-  animation:spark .15s infinite alternate;
-}
-@keyframes spark{to{transform:translateY(-6px);opacity:.3}}
-
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:rgba(2,6,23,.75);
-  z-index:-1;
+.toggle{
+  cursor:pointer;
+  padding:6px 10px;
+  border-radius:8px;
+  background:var(--card);
+  border:1px solid var(--border);
 }
 
-/* ===== DASHBOARD ===== */
-h2{text-align:center;margin:15px}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:20px;
-  padding:30px;
+/* ===== BOARD ===== */
+.board{
+  display:flex;
+  gap:14px;
+  padding:18px;
 }
-.card{
-  background:#0f172a;
-  padding:24px;
-  border-radius:18px;
+.col{
+  flex:1;
+  background:var(--card);
+  border-radius:16px;
+  padding:14px;
+  border:1px solid var(--border);
 }
+.col h3{
+  margin:0 0 10px;
+  font-size:14px;
+  color:var(--muted);
+}
+.job{
+  background:rgba(2,6,23,.6);
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:8px;
+}
+body.light .job{background:#f1f5f9}
+button{
+  width:100%;
+  margin-top:6px;
+  height:32px;
+  border:none;
+  border-radius:8px;
+  background:var(--accent);
+  font-weight:600;
+  cursor:pointer;
+}
+small{color:var(--muted)}
 </style>
 </head>
 
 <body>
 
-<!-- Racing Background -->
-<div class="race-bg">
-  <div class="road"></div>
-  <div class="car car1">🏎️</div>
-  <div class="car car2">🚗</div>
-  <div class="car car3">🚙</div>
-  <div class="headlight"></div>
-  <div class="sparks"></div>
+<div class="header">
+  <div class="brand">🔧 AutoCare Plus – Staff</div>
+  <div class="toggle" id="toggle">🌙</div>
 </div>
 
-<h2>📊 Service Insights</h2>
-<div class="grid">
-  <div class="card" id="workload"></div>
-  <div class="card" id="completed"></div>
-  <div class="card" id="avgtime"></div>
-</div>
+<div class="board" id="board"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot }
+import { getFirestore, collection, onSnapshot, updateDoc, doc, serverTimestamp }
 from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
 /* Firebase */
@@ -113,70 +112,54 @@ const app = initializeApp({
   apiKey: "AIzaSyD9cPmUCMEtT7XukcAxmeS50jKh1A2f31Q",
   authDomain: "auto-care-plus-e7fdf.firebaseapp.com",
   projectId: "auto-care-plus-e7fdf",
-  storageBucket: "auto-care-plus-e7fdf.firebasestorage.app",
-  messagingSenderId: "746107164946",
-  appId: "1:746107164946:web:5951433bf11f0cadedfbcb"
 });
 const db = getFirestore(app);
 
-/* Insights */
-onSnapshot(collection(db,"jobs"),snap=>{
-  let stage={},done=0,total=0;
+/* Board */
+const stages=["NEW","INSPECTION","REPAIR","QUALITY_CHECK","READY"];
+board.innerHTML = stages.map(s=>`
+  <div class="col">
+    <h3>${s}</h3>
+    <div id="${s}"></div>
+  </div>
+`).join("");
 
+onSnapshot(collection(db,"jobs"),snap=>{
+  stages.forEach(s=>document.getElementById(s).innerHTML="");
   snap.forEach(d=>{
     const j=d.data();
-    stage[j.status]=(stage[j.status]||0)+1;
-    if(j.completedAt && j.createdAt){
-      done++;
-      total+=j.completedAt.seconds-j.createdAt.seconds;
-    }
+    const div=document.createElement("div");
+    div.className="job";
+    div.innerHTML=`
+      <b>${j.vehicleNumber}</b><br>
+      <small>${j.customerName}</small>
+      ${j.status!=="READY"?
+        `<button onclick="next('${d.id}','${j.status}')">Next</button>`:""}
+    `;
+    document.getElementById(j.status).appendChild(div);
   });
-
-  workload.innerHTML=`<h3>Workload</h3>`+
-    Object.entries(stage).map(([k,v])=>`${k}: ${v}`).join("<br>")+
-    `<p>${new Date().toLocaleString()}</p>`;
-
-  completed.innerHTML=`<h3>Completed Jobs</h3><h1>${done}</h1>`;
-
-  avgtime.innerHTML=`<h3>Avg Turnaround</h3>
-    <h1>${done?Math.round(total/done/60):0} mins</h1>`;
 });
 
-/* ===== REAL-TIME SPEED ENGINE ===== */
-let speed=12;
-const cars=document.querySelectorAll(".car");
-const road=document.querySelector(".road");
+window.next=async(id,status)=>{
+  const i=stages.indexOf(status);
+  if(i<stages.length-1){
+    await updateDoc(doc(db,"jobs",id),{
+      status:stages[i+1],
+      completedAt:stages[i+1]==="READY"?serverTimestamp():null
+    });
+  }
+};
 
-const style=document.createElement("style");
-style.innerHTML=`
-@keyframes drive{
-  0%{transform:translateX(-20vw) scaleX(1)}
-  45%{transform:translateX(120vw) scaleX(1)}
-  50%{transform:translateX(120vw) scaleX(-1)}
-  95%{transform:translateX(-20vw) scaleX(-1)}
-  100%{transform:translateX(-20vw) scaleX(1)}
-}
-@keyframes roadMove{to{transform:translateX(-50%)}}
-`;
-document.head.appendChild(style);
-
-function applySpeed(){
-  cars.forEach((c,i)=>{
-    c.style.animation=`drive ${speed+i*2}s linear infinite`;
-  });
-  road.style.animation=`roadMove ${speed/4}s linear infinite`;
-}
-applySpeed();
-
-onSnapshot(collection(db,"jobs"),snap=>{
-  let load=0;
-  snap.forEach(d=>{
-    if(["REPAIR","QUALITY_CHECK"].includes(d.data().status)) load++;
-  });
-  speed=Math.max(6,16-load);
-  applySpeed();
-});
+/* ===== THEME TOGGLE ===== */
+const toggle=document.getElementById("toggle");
+const saved=localStorage.getItem("theme");
+if(saved==="light"){document.body.classList.add("light");toggle.textContent="☀️"}
+toggle.onclick=()=>{
+  document.body.classList.toggle("light");
+  const l=document.body.classList.contains("light");
+  toggle.textContent=l?"☀️":"🌙";
+  localStorage.setItem("theme",l?"light":"dark");
+};
 </script>
-
 </body>
 </html>
