@@ -1,165 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>AutoCare Plus | Staff</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>AutoCare Plus | Staff Command</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700&display=swap" rel="stylesheet">
 
-<style>
-/* ===== THEME VARIABLES ===== */
-:root{
-  --bg:#0b1020;
-  --card:#0f172a;
-  --border:rgba(255,255,255,.06);
-  --text:#fff;
-  --muted:#9ca3af;
-  --accent:#22c55e;
-}
-body.light{
-  --bg:#f8fafc;
-  --card:#ffffff;
-  --border:#e5e7eb;
-  --text:#020617;
-  --muted:#64748b;
-  --accent:#16a34a;
-}
+    <style>
+        :root {
+            --accent-cyan: #00d2ff;
+            --accent-green: #22c55e;
+            --glass: rgba(15, 23, 42, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --bg: #020617;
+        }
 
-html,body{height:100%}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:"Inter","Segoe UI",sans-serif;
-  transition:.3s;
-}
+        body.light {
+            --bg: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.8);
+            --border: rgba(0, 0, 0, 0.1);
+            --accent-cyan: #0088cc;
+        }
 
-/* ===== HEADER ===== */
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:16px 22px;
-}
-.brand{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  font-weight:600;
-}
-.toggle{
-  cursor:pointer;
-  padding:6px 10px;
-  border-radius:8px;
-  background:var(--card);
-  border:1px solid var(--border);
-}
+        * { box-sizing: border-box; transition: all 0.3s ease; }
 
-/* ===== BOARD ===== */
-.board{
-  display:flex;
-  gap:14px;
-  padding:18px;
-}
-.col{
-  flex:1;
-  background:var(--card);
-  border-radius:16px;
-  padding:14px;
-  border:1px solid var(--border);
-}
-.col h3{
-  margin:0 0 10px;
-  font-size:14px;
-  color:var(--muted);
-}
-.job{
-  background:rgba(2,6,23,.6);
-  padding:10px;
-  border-radius:10px;
-  margin-bottom:8px;
-}
-body.light .job{background:#f1f5f9}
-button{
-  width:100%;
-  margin-top:6px;
-  height:32px;
-  border:none;
-  border-radius:8px;
-  background:var(--accent);
-  font-weight:600;
-  cursor:pointer;
-}
-small{color:var(--muted)}
-</style>
+        body {
+            margin: 0; min-height: 100vh;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        body.light { color: #020617; }
+
+        /* ANIMATED BACKGROUND (Consistent with Main Page) */
+        .hero-bg {
+            position: fixed; inset: 0;
+            background: linear-gradient(to bottom, rgba(2, 6, 23, 0.5), rgba(2, 6, 23, 0.9)),
+                        url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2000&auto=format&fit=crop') center/cover no-repeat;
+            z-index: -3;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 40px;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .brand { font-size: 22px; font-weight: 700; letter-spacing: -1px; color: var(--accent-cyan); }
+        .toggle { cursor: pointer; font-size: 20px; }
+
+        /* KANBAN BOARD */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            padding: 30px;
+            align-items: start;
+        }
+
+        .col {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            min-height: 80vh;
+            display: flex; flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .col h3 {
+            margin: 0 0 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-cyan);
+            border-left: 3px solid var(--accent-cyan);
+            padding-left: 10px;
+        }
+
+        /* JOB CARDS */
+        .job {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .job:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-3px);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.15);
+        }
+
+        .job b { display: block; font-size: 16px; margin-bottom: 4px; letter-spacing: 1px; }
+        .job small { color: #94a3b8; font-size: 12px; }
+
+        /* NEON BUTTON */
+        .next-btn {
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px;
+            border: 1px solid var(--accent-green);
+            background: transparent;
+            color: var(--accent-green);
+            border-radius: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .next-btn:hover {
+            background: var(--accent-green);
+            color: white;
+            box-shadow: 0 0 15px var(--accent-green);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1000px) {
+            .board { grid-template-columns: 1fr; }
+            .col { min-height: auto; }
+        }
+    </style>
 </head>
 
 <body>
 
+<div class="hero-bg"></div>
+
 <div class="header">
-  <div class="brand">🔧 AutoCare Plus – Staff</div>
-  <div class="toggle" id="toggle">🌙</div>
+    <div class="brand">🔧 AUTOCARE STAFF // COMMAND</div>
+    <div class="toggle" id="toggle">🌙</div>
 </div>
 
 <div class="board" id="board"></div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, updateDoc, doc, serverTimestamp }
-from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, updateDoc, doc, serverTimestamp } 
+    from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-/* Firebase */
-const app = initializeApp({
-  apiKey: "AIzaSyD9cPmUCMEtT7XukcAxmeS50jKh1A2f31Q",
-  authDomain: "auto-care-plus-e7fdf.firebaseapp.com",
-  projectId: "auto-care-plus-e7fdf",
-});
-const db = getFirestore(app);
+    const firebaseConfig = {
+        apiKey: "AIzaSyD9cPmUCMEtT7XukcAxmeS50jKh1A2f31Q",
+        authDomain: "auto-care-plus-e7fdf.firebaseapp.com",
+        projectId: "auto-care-plus-e7fdf",
+    };
 
-/* Board */
-const stages=["NEW","INSPECTION","REPAIR","QUALITY_CHECK","READY"];
-board.innerHTML = stages.map(s=>`
-  <div class="col">
-    <h3>${s}</h3>
-    <div id="${s}"></div>
-  </div>
-`).join("");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-onSnapshot(collection(db,"jobs"),snap=>{
-  stages.forEach(s=>document.getElementById(s).innerHTML="");
-  snap.forEach(d=>{
-    const j=d.data();
-    const div=document.createElement("div");
-    div.className="job";
-    div.innerHTML=`
-      <b>${j.vehicleNumber}</b><br>
-      <small>${j.customerName}</small>
-      ${j.status!=="READY"?
-        `<button onclick="next('${d.id}','${j.status}')">Next</button>`:""}
-    `;
-    document.getElementById(j.status).appendChild(div);
-  });
-});
+    const stages = ["NEW", "INSPECTION", "REPAIR", "QUALITY_CHECK", "READY"];
+    const board = document.getElementById("board");
 
-window.next=async(id,status)=>{
-  const i=stages.indexOf(status);
-  if(i<stages.length-1){
-    await updateDoc(doc(db,"jobs",id),{
-      status:stages[i+1],
-      completedAt:stages[i+1]==="READY"?serverTimestamp():null
+    // Initialize Columns
+    board.innerHTML = stages.map(s => `
+        <div class="col">
+            <h3>${s.replace('_', ' ')}</h3>
+            <div id="${s}"></div>
+        </div>
+    `).join("");
+
+    // Real-time Sync
+    onSnapshot(collection(db, "jobs"), snap => {
+        stages.forEach(s => document.getElementById(s).innerHTML = "");
+        snap.forEach(d => {
+            const j = d.data();
+            const div = document.createElement("div");
+            div.className = "job";
+            div.innerHTML = `
+                <b>${j.vehicleNumber}</b>
+                <small>${j.customerName}</small>
+                ${j.status !== "READY" ? 
+                    `<button class="next-btn" onclick="next('${d.id}','${j.status}')">Advance Phase →</button>` : 
+                    `<div style="color:var(--accent-green); font-size:10px; margin-top:10px; font-weight:bold;">● COMPLETED</div>`}
+            `;
+            const column = document.getElementById(j.status);
+            if(column) column.appendChild(div);
+        });
     });
-  }
-};
 
-/* ===== THEME TOGGLE ===== */
-const toggle=document.getElementById("toggle");
-const saved=localStorage.getItem("theme");
-if(saved==="light"){document.body.classList.add("light");toggle.textContent="☀️"}
-toggle.onclick=()=>{
-  document.body.classList.toggle("light");
-  const l=document.body.classList.contains("light");
-  toggle.textContent=l?"☀️":"🌙";
-  localStorage.setItem("theme",l?"light":"dark");
-};
+    window.next = async (id, status) => {
+        const i = stages.indexOf(status);
+        if (i < stages.length - 1) {
+            const jobRef = doc(db, "jobs", id);
+            await updateDoc(jobRef, {
+                status: stages[i + 1],
+                completedAt: stages[i + 1] === "READY" ? serverTimestamp() : null
+            });
+        }
+    };
+
+    /* THEME TOGGLE */
+    const toggle = document.getElementById("toggle");
+    toggle.onclick = () => {
+        document.body.classList.toggle("light");
+        const isLight = document.body.classList.contains("light");
+        toggle.textContent = isLight ? "☀️" : "🌙";
+    };
 </script>
 </body>
 </html>
